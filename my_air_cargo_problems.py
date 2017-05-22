@@ -59,8 +59,29 @@ class AirCargoProblem(Problem):
 
             :return: list of Action objects
             """
-            loads = []
-            # TODO create all load ground actions from the domain Load action
+            loads = [
+                Action(
+                    expr("Load({}, {}, {})".format(c, p, a)),
+                    [
+                        [
+                            expr("At({}, {})".format(c, a)),
+                            expr("At({}, {})".format(p, a)),
+                            expr("Cargo({})".format(c)),
+                            expr("Plane({})".format(p)),
+                            expr("Airport({})".format(a)),
+                        ],
+                        []
+                    ],
+                    [
+                        [expr("In({}, {})").format(c, p)],
+                        [expr("At({}, {})").format(c, a)],
+                    ]
+                )
+                for c in self.cargos
+                for p in self.planes
+                for a in self.airports
+            ] 
+
             return loads
 
         def unload_actions():
@@ -68,8 +89,29 @@ class AirCargoProblem(Problem):
 
             :return: list of Action objects
             """
-            unloads = []
-            # TODO create all Unload ground actions from the domain Unload action
+            unloads = [
+                Action(
+                    expr("Unload({}, {}, {})".format(c, p, a)),
+                    [
+                        [
+                            expr("In({}, {})".format(c, a)),
+                            expr("At({}, {})".format(p, a)),
+                            expr("Cargo({})".format(c)),
+                            expr("Plane({})".format(p)),
+                            expr("Airport({})".format(a)),
+                        ],
+                        []
+                    ],
+                    [
+                        [expr("At({}, {})").format(c, a)],
+                        [expr("In({}, {})").format(c, p)],
+                    ]
+                )
+                for c in self.cargos
+                for p in self.planes
+                for a in self.airports
+            ] 
+            
             return unloads
 
         def fly_actions():
