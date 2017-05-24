@@ -111,7 +111,7 @@ class AirCargoProblem(Problem):
                 for p in self.planes
                 for a in self.airports
             ] 
-            
+
             return unloads
 
         def fly_actions():
@@ -145,8 +145,24 @@ class AirCargoProblem(Problem):
             e.g. 'FTTTFF'
         :return: list of Action objects
         """
-        # TODO implement
+
         possible_actions = []
+        kb = PropKb()
+        kb.tell(decode_state(str, self.state_map).sentence())
+
+        for action in self.actions_list:
+            is_possible = True
+            for clause in action.precon_pos:
+                if clause not in kb.clauses:
+                    is_possible = False
+
+            for clause in action.precon_neg:
+                if clause not in kb.clauses:
+                    is_possible = False
+
+            if is_possible:
+                possible_actions.append(action)
+
         return possible_actions
 
     def result(self, state: str, action: Action):
