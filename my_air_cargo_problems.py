@@ -309,5 +309,41 @@ def air_cargo_p2() -> AirCargoProblem:
 
 
 def air_cargo_p3() -> AirCargoProblem:
-    # TODO implement Problem 3 definition
-    pass
+    cargos = ['C1', 'C2', 'C3', 'C4']
+    planes = ['P1', 'P2']
+    airports = ['JFK', 'SFO', 'ATL', 'ORD']
+    pos = [expr('At(C1, SFO)'),
+           expr('At(C2, JFK)'),
+           expr('At(C3, ATL)'),
+           expr('At(C4, ORD)'),
+           expr('At(P1, SFO)'),
+           expr('At(P2, JFK)'),
+           ]
+    neg = []
+
+    # Fill in negative states
+    for c in cargos:
+        if c == 'C1':
+            pos_airport = 'SFO'
+        elif c == 'C2':
+            pos_airport = 'JFK'
+        elif c == 'C3':
+            pos_airport = 'ATL'
+        elif c == 'C4':
+            pos_airport = 'ORD'
+
+        neg += [expr('At({}, {}'.format(c, a)) for a in airports if a != pos_airport]
+    neg += [expr('In({}, {}'.format(c, a)) for c in cargos for a in airports]
+    neg += [expr('At({}, {})'.format(p, a)) for p in planes for a in airports 
+        if not (p == 'P1' and a == 'SFO') or not (p == 'P2' and a == 'JFK')
+    ]
+
+    init = FluentState(pos, neg)
+    goal = [
+        expr('At(C1, JFK)'),
+        expr('At(C3, JFK)'),
+        expr('At(C2, SFO)'),
+        expr('At(C4, SFO)'),
+    ]
+    return AirCargoProblem(cargos, planes, airports, init, goal)
+
