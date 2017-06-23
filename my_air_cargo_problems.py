@@ -143,16 +143,16 @@ class AirCargoProblem(Problem):
         """
 
         possible_actions = []
-        kb = PropKb()
-        kb.tell(decode_state(str, self.state_map).sentence())
+        kb = PropKB()   # kb = knowledge base
+        kb.tell(decode_state(state, self.state_map).sentence())
 
         for action in self.actions_list:
             is_possible = True
-            for clause in action.precon_pos:
+            for clause in action.precond_pos:
                 if clause not in kb.clauses:
                     is_possible = False
 
-            for clause in action.precon_neg:
+            for clause in action.precond_neg:
                 if clause not in kb.clauses:
                     is_possible = False
 
