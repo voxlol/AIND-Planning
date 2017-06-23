@@ -59,25 +59,31 @@ class AirCargoProblem(Problem):
 
             :return: list of Action objects
             """
+
+            """
+            Look all permutations of airports, cargos, planes and create an array of actions.
+            For each instance of the load aciton, a precondition is that cargo must be at the plane in order the load
+            For each instance of the load action, the effects are that the cargo is in the plane AND the cargo is no longer in the airplane
+            """
             loads = [
                 Action(
-                    expr("Load({}, {}, {})".format(c, p, a)),
-                    [
-                        [
+                    expr("Load({}, {}, {})".format(c, p, a)),   # action for load 
+                    [                                           # preconditions
+                        [                                       # positive precondition
                             expr("At({}, {})".format(c, a)),
                             expr("At({}, {})".format(p, a)),
                         ],
-                        []
+                        []                                      # negative precondition
                     ],
-                    [
-                        [expr("In({}, {})").format(c, p)],
-                        [expr("At({}, {})").format(c, a)],
+                    [                                           # effects
+                        [expr("In({}, {})".format(c, p))],      # added effect
+                        [expr("At({}, {})".format(c, a))],      # removed effect
                     ]
                 )
                 for c in self.cargos
                 for p in self.planes
                 for a in self.airports
-            ] 
+            ]
 
             return loads
 
@@ -86,21 +92,17 @@ class AirCargoProblem(Problem):
 
             :return: list of Action objects
             """
+
+            action = expr("Unload({}, {}, {})".format(c, p, a))
+            positive_precondition = [expr("In({}, {})".format(c, p)), expr("At({}, {})".format(p, a))]
+            negative_precondition = []
+            preconditions = [positive_precondition, negative_precondition]
+            positive_effect = [expr("At({}, {})".format(c, a))]
+            negative_effect = [expr("In({}, {})".format(c, p))]
+            effects = [positive_effect, negative_effect]
+
             unloads = [
-                Action(
-                    expr("Unload({}, {}, {})".format(c, p, a)),
-                    [
-                        [
-                            expr("In({}, {})".format(c, a)),
-                            expr("At({}, {})".format(p, a)),
-                        ],
-                        []
-                    ],
-                    [
-                        [expr("At({}, {})").format(c, a)],
-                        [expr("In({}, {})").format(c, p)],
-                    ]
-                )
+                Action(action, preconditions, effects)
                 for c in self.cargos
                 for p in self.planes
                 for a in self.airports
