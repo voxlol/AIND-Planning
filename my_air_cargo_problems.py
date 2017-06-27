@@ -93,22 +93,23 @@ class AirCargoProblem(Problem):
             :return: list of Action objects
             """
 
-            action = expr("Unload({}, {}, {})".format(c, p, a))
-            positive_precondition = [expr("In({}, {})".format(c, p)), expr("At({}, {})".format(p, a))]
-            negative_precondition = []
-            preconditions = [positive_precondition, negative_precondition]
-            positive_effect = [expr("At({}, {})".format(c, a))]
-            negative_effect = [expr("In({}, {})".format(c, p))]
-            effects = [positive_effect, negative_effect]
+            return  [
+                Action(
+                    expr("Unload({}, {}, {})".format(c, p, a)), 
+                    [
+                        [expr("In({}, {})".format(c, p)), expr("At({}, {})".format(p, a))],
+                        []
+                    ], 
+                    [
+                        [expr("At({}, {})".format(c, a))],
+                        [expr("In({}, {})".format(c, p))]
+                    ]
+                )
 
-            unloads = [
-                Action(action, preconditions, effects)
                 for c in self.cargos
                 for p in self.planes
                 for a in self.airports
             ] 
-
-            return unloads
 
         def fly_actions():
             """Create all concrete Fly actions and return a list
@@ -310,9 +311,9 @@ def air_cargo_p2() -> AirCargoProblem:
     ]
     init = FluentState(pos, neg)
     goal = [
-        expr('At(C1, JFK'),
-        expr('At(C2, SFO'),
-        expr('At(C3, SFO'),
+        expr('At(C1, JFK)'),
+        expr('At(C2, SFO)'),
+        expr('At(C3, SFO)'),
     ]
 
     return AirCargoProblem(cargos, planes, airports, init, goal)
@@ -322,13 +323,14 @@ def air_cargo_p3() -> AirCargoProblem:
     cargos = ['C1', 'C2', 'C3', 'C4']
     planes = ['P1', 'P2']
     airports = ['JFK', 'SFO', 'ATL', 'ORD']
-    pos = [expr('At(C1, SFO)'),
-           expr('At(C2, JFK)'),
-           expr('At(C3, ATL)'),
-           expr('At(C4, ORD)'),
-           expr('At(P1, SFO)'),
-           expr('At(P2, JFK)'),
-           ]
+    pos = [
+        expr('At(C1, SFO)'),
+        expr('At(C2, JFK)'),
+        expr('At(C3, ATL)'),
+        expr('At(C4, ORD)'),
+        expr('At(P1, SFO)'),
+        expr('At(P2, JFK)'),
+    ]
     neg = []
 
     # Fill in negative states
@@ -342,10 +344,16 @@ def air_cargo_p3() -> AirCargoProblem:
         elif c == 'C4':
             pos_airport = 'ORD'
 
-        neg += [expr('At({}, {}'.format(c, a)) for a in airports if a != pos_airport]
-    neg += [expr('In({}, {}'.format(c, a)) for c in cargos for a in airports]
-    neg += [expr('At({}, {})'.format(p, a)) for p in planes for a in airports 
-        if not (p == 'P1' and a == 'SFO') or not (p == 'P2' and a == 'JFK')
+        # add negative preconditions for the cargo to NOT be at other airports than the init airports
+        neg += [expr('At({}, {})'.format(c, a)) for a in airports if a != pos_airport]
+        
+    # add neg precondition where all cargo does not start in a plane
+    neg += [ expr('In({}, {})'.format(c, p)) for c in cargos for p in planes ]
+
+    # add neg precondition where all planes 
+    neg += [
+        expr('At({}, {})'.format(p, a)) for p in planes for a in airports 
+        if not (p == 'P1' and a == 'SFO') and not (p == 'P2' and a == 'JFK')
     ]
 
     init = FluentState(pos, neg)
@@ -355,5 +363,5 @@ def air_cargo_p3() -> AirCargoProblem:
         expr('At(C2, SFO)'),
         expr('At(C4, SFO)'),
     ]
-    return AirCargoProblem(cargos, planes, airports, init, goal)
 
+    return AirCargoProblem(cargos, planes, airports, init, goal)
