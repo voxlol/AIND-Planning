@@ -545,9 +545,12 @@ class PlanningGraph():
         for goal in self.problem.goal:
             goal_found = False
             for i, states in enumerate(self.s_levels):
+                if goal_found:
+                    break
                 for state_node in states:
                     if state_node.symbol == goal and state_node.is_pos and not goal_found:
                         goal_found = True
                         level_sum += i
+                        break
                 
         return level_sum
